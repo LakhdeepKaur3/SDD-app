@@ -1,6 +1,6 @@
 import { Todo } from './types';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://sdd-app-808426301962.asia-south1.run.app';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
