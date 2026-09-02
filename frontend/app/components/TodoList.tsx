@@ -13,7 +13,7 @@ export default function TodoList({ todos, onToggle, onDelete }: Props) {
   if (todos.length === 0) {
     return (
       <p className="text-center text-gray-400 py-12">
-        No tasks yet. Add one above!
+        No tasks. Add one above!
       </p>
     );
   }
