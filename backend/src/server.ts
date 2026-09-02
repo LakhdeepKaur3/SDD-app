@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 4000;
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://sdd-app-1037941709465.asia-south1.run.app/"
+  "https://sdd-app-1037941709465.asia-south1.run.app"
 ];
 
 app.use(cors({
@@ -18,6 +18,13 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "Backend is working!"
+  });
+});
 
 app.use('/api/todos', todosRouter);
 
