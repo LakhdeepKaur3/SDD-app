@@ -6,8 +6,13 @@ export async function getAll(req: Request, res: Response) {
   try {
     const todos = await todosService.getAll();
     res.json(todos);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch todos' });
+  } catch (error) {
+    console.error('Failed to fetch todos:', error);
+
+    res.status(500).json({
+      error: 'Failed to fetch todos',
+      message: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 
@@ -23,6 +28,7 @@ export async function create(req: Request, res: Response) {
     if (err instanceof ValidationError) {
       return res.status(400).json({ error: err.message });
     }
+    console.error('Failed to create todo:', err);
     res.status(500).json({ error: 'Failed to create todo' });
   }
 }
@@ -40,6 +46,7 @@ export async function update(req: Request, res: Response) {
     if (err instanceof NotFoundError) {
       return res.status(404).json({ error: err.message });
     }
+    console.error('Failed to update todo:', err);
     res.status(500).json({ error: 'Failed to update todo' });
   }
 }
@@ -53,6 +60,7 @@ export async function remove(req: Request, res: Response) {
     if (err instanceof NotFoundError) {
       return res.status(404).json({ error: err.message });
     }
+    console.error('Failed to delete todo:', err);
     res.status(500).json({ error: 'Failed to delete todo' });
   }
 }
