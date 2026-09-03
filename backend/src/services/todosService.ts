@@ -23,7 +23,7 @@ export async function getAll() {
 export async function create(text: string) {
   const trimmed = text.trim();
   if (!trimmed) throw new ValidationError('Text cannot be empty');
-  if (trimmed.length > 500) throw new ValidationError('Text must be 500 characters or fewer');
+  if (trimmed.length > 500) throw new ValidationError('Text must be 500 characters or fewerr');
   return prisma.todo.create({ data: { text: trimmed } });
 }
 
