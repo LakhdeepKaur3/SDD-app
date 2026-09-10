@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: sdd-backend
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: sdd-backend
+
+  template:
+    metadata:
+      labels:
+        app: sdd-backend
+
+    spec:
+      containers:
+        - name: backend
+
+          image: asia-south1-docker.pkg.dev/my-project-backend-507414/sdd-repo/sdd-backend:latest
+
+          ports:
+            - containerPort: 4000

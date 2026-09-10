@@ -1,0 +1,90 @@
+name: Deploy Frontend and Backend to GKE
+
+on:
+  push:
+    branches: 
+      - main
+
+env:
+  PROJECT_ID: my-project-backend-507414
+  REGION: asia-south1
+  CLUSTER_NAME: sdd-cluster
+   
+  REPOSITORY: asia-south1-docker.pkg.dev/my-project-backend-507414/sdd-repo
+
+  BACKEND_IMAGE: asia-south1-docker.pkg.dev/my-project-backend-507414/sdd-repo/sdd-backend:latest
+  FRONTEND_IMAGE: asia-south1-docker.pkg.dev/my-project-backend-507414/sdd-repo/sdd-frontend:latest
+  
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+
+
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+       
+       -name:Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: projects/507414/locations/global/workloadIdentityPools/sdd-pool/providers/sdd-provider
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+        -name: Configure Docker
+        run: |
+          gcloud auth configure-docker asia-south1-docker.pkg.dev --quiet
+
+        -name: Build backend Docker image
+        run: |
+          docker build -t ${{ env.BACKEND_IMAGE }} ./backend
+
+
+        -name: Push backend Docker image
+        run: |
+          docker push ${{ env.BACKEND_IMAGE }}
+
+        -name: Build frontend Docker image
+        run: |
+          docker build -t ${{ env.FRONTEND_IMAGE }} ./frontend
+
+        -name: Push frontend Docker image
+        run: |
+          docker push ${{ env.FRONTEND_IMAGE }}
+
+        -name: GET GKE credentials
+           uses: google-github-actions/get-gke-credentials@v1
+            with: 
+              cluster_name: ${{ env.CLUSTER_NAME }}
+              location: ${{ env.REGION }}
+              project_id: ${{ env.PROJECT_ID }}
+
+        -name: Deploy backend to GKE
+        run: |
+        kubectl set image deployment/sdd-backend backend=${{ env.BACKEND_IMAGE }}
+
+        -name: Wait for backend rollout
+        run: |
+          kubectl rollout status deployment/sdd-backend --timeout=5m
+
+        -name: Deploy frontend to GKE
+        run: |
+          kubectl set image deployment/sdd-frontend frontend=${{ env.FRONTEND_IMAGE }}
+
+        -name: Wait for frontend rollout
+        run: |
+          kubectl rollout status deployment/sdd-frontend --timeout=5m 
+
+        -name: Check Pods status
+        run: | 
+          kubectl get pods
+
+
+
+
+  
+
