@@ -38,7 +38,7 @@ jobs:
         with:
           project_id: ${{ env.PROJECT_ID }}
           workload_identity_provider: projects/808426301962/locations/global/workloadIdentityPools/github-actions/providers/github
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          service_account: github-actions@my-project-backend-507414.iam.gserviceaccount.com
 
       - name: Configure Docker
         run: |
