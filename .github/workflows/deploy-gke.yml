@@ -2,89 +2,94 @@ name: Deploy Frontend and Backend to GKE
 
 on:
   push:
-    branches: 
+    branches:
       - main
 
 env:
   PROJECT_ID: my-project-backend-507414
   REGION: asia-south1
   CLUSTER_NAME: sdd-cluster
-   
-  REPOSITORY: asia-south1-docker.pkg.dev/my-project-backend-507414/sdd-repo
 
-  BACKEND_IMAGE: asia-south1-docker.pkg.dev/my-project-backend-507414/sdd-repo/sdd-backend:latest
-  FRONTEND_IMAGE: asia-south1-docker.pkg.dev/my-project-backend-507414/sdd-repo/sdd-frontend:latest
-  
+  REPOSITORY: sdd-repo
+
+  BACKEND_IMAGE: sdd-backend
+  FRONTEND_IMAGE: sdd-frontend
+
+  BACKEND_DEPLOYMENT: sdd-backend
+  FRONTEND_DEPLOYMENT: sdd-frontend
+
+  BACKEND_CONTAINER: backend
+  FRONTEND_CONTAINER: frontend
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
       id-token: write
 
-
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-       
-       -name:Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: projects/507414/locations/global/workloadIdentityPools/sdd-pool/providers/sdd-provider
+          workload_identity_provider: projects/808426301962/locations/global/workloadIdentityPools/sdd-pool/providers/sdd-provider
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
-        -name: Configure Docker
+      - name: Configure Docker
         run: |
           gcloud auth configure-docker asia-south1-docker.pkg.dev --quiet
 
-        -name: Build backend Docker image
+      - name: Build backend Docker image
         run: |
-          docker build -t ${{ env.BACKEND_IMAGE }} ./backend
+          docker build \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$BACKEND_IMAGE:$GITHUB_SHA \
+            ./backend
 
-
-        -name: Push backend Docker image
+      - name: Push backend Docker image
         run: |
-          docker push ${{ env.BACKEND_IMAGE }}
+          docker push \
+            asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$BACKEND_IMAGE:$GITHUB_SHA
 
-        -name: Build frontend Docker image
+      - name: Build frontend Docker image
         run: |
-          docker build -t ${{ env.FRONTEND_IMAGE }} ./frontend
+          docker build \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$FRONTEND_IMAGE:$GITHUB_SHA \
+            ./frontend
 
-        -name: Push frontend Docker image
+      - name: Push frontend Docker image
         run: |
-          docker push ${{ env.FRONTEND_IMAGE }}
+          docker push \
+            asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$FRONTEND_IMAGE:$GITHUB_SHA
 
-        -name: GET GKE credentials
-           uses: google-github-actions/get-gke-credentials@v1
-            with: 
-              cluster_name: ${{ env.CLUSTER_NAME }}
-              location: ${{ env.REGION }}
-              project_id: ${{ env.PROJECT_ID }}
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v3
+        with:
+          cluster_name: ${{ env.CLUSTER_NAME }}
+          location: ${{ env.REGION }}
+          project_id: ${{ env.PROJECT_ID }}
 
-        -name: Deploy backend to GKE
+      - name: Deploy backend to GKE
         run: |
-        kubectl set image deployment/sdd-backend backend=${{ env.BACKEND_IMAGE }}
+          kubectl set image deployment/$BACKEND_DEPLOYMENT \
+            $BACKEND_CONTAINER=asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$BACKEND_IMAGE:$GITHUB_SHA
 
-        -name: Wait for backend rollout
+      - name: Wait for backend rollout
         run: |
-          kubectl rollout status deployment/sdd-backend --timeout=5m
+          kubectl rollout status deployment/$BACKEND_DEPLOYMENT --timeout=5m
 
-        -name: Deploy frontend to GKE
+      - name: Deploy frontend to GKE
         run: |
-          kubectl set image deployment/sdd-frontend frontend=${{ env.FRONTEND_IMAGE }}
+          kubectl set image deployment/$FRONTEND_DEPLOYMENT \
+            $FRONTEND_CONTAINER=asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$FRONTEND_IMAGE:$GITHUB_SHA
 
-        -name: Wait for frontend rollout
+      - name: Wait for frontend rollout
         run: |
-          kubectl rollout status deployment/sdd-frontend --timeout=5m 
+          kubectl rollout status deployment/$FRONTEND_DEPLOYMENT --timeout=5m
 
-        -name: Check Pods status
-        run: | 
+      - name: Check Pods status
+        run: |
           kubectl get pods
-
-
-
-
-  
-
