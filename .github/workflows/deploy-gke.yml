@@ -36,7 +36,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: projects/808426301962/locations/global/workloadIdentityPools/sdd-pool/providers/sdd-provider
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: projects/808426301962/locations/global/workloadIdentityPools/github-actions/providers/github
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Configure Docker
