@@ -19,7 +19,7 @@ env:
   FRONTEND_DEPLOYMENT: sdd-frontend
 
   BACKEND_CONTAINER: backend
-  FRONTEND_CONTAINER: frontend
+  FRONTEND_CONTAINER: sdd-frontend
 
 jobs:
   deploy:
