@@ -55,11 +55,12 @@ jobs:
           docker push \
             asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$BACKEND_IMAGE:$GITHUB_SHA
 
-      - name: Build frontend Docker image
+     - name: Build frontend Docker image
         run: |
           docker build \
+           --build-arg NEXT_PUBLIC_API_URL=http://34.180.7.122 \
             -t asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$FRONTEND_IMAGE:$GITHUB_SHA \
-            ./frontend
+           ./frontend
 
       - name: Push frontend Docker image
         run: |
