@@ -9,7 +9,6 @@ env:
   PROJECT_ID: my-project-backend-507414
   REGION: asia-south1
   CLUSTER_NAME: sdd-cluster
-
   REPOSITORY: sdd-repo
 
   BACKEND_IMAGE: sdd-backend
@@ -38,7 +37,7 @@ jobs:
         with:
           project_id: ${{ env.PROJECT_ID }}
           workload_identity_provider: projects/808426301962/locations/global/workloadIdentityPools/github-actions/providers/github
-          service_account: github-actions@my-project-backend-507414.iam.gserviceaccount.com
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Configure Docker
         run: |
@@ -55,12 +54,12 @@ jobs:
           docker push \
             asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$BACKEND_IMAGE:$GITHUB_SHA
 
-     - name: Build frontend Docker image
+      - name: Build frontend Docker image
         run: |
           docker build \
-           --build-arg NEXT_PUBLIC_API_URL=http://34.180.7.122 \
+            --build-arg NEXT_PUBLIC_API_URL=http://34.180.7.122 \
             -t asia-south1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$FRONTEND_IMAGE:$GITHUB_SHA \
-           ./frontend
+            ./frontend
 
       - name: Push frontend Docker image
         run: |
